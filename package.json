@@ -3,7 +3,13 @@
   "version": "0.0.0-semantically-released",
   "description": "Authentication for Next.js",
   "homepage": "https://next-auth.js.org",
-  "repository": "https://github.com/nextauthjs/next-auth.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nextauthjs/next-auth.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "Iain Collins <me@iaincollins.com>",
   "main": "index.js",
   "types": "./index.d.ts",
@@ -204,5 +210,8 @@
       "type": "github",
       "url": "https://github.com/sponsors/balazsorban44"
     }
-  ]
+  ],
+  "bugs": {
+    "url": "https://github.com/nextauthjs/next-auth/issues"
+  }
 }
