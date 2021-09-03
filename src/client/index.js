@@ -18,6 +18,7 @@ import {
 import _logger, { proxyLogger } from "../lib/logger"
 import parseUrl from "../lib/parse-url"
 
+const multiTenant = process.env.MULTI_TENANT === "true"
 // This behaviour mirrors the default behaviour for getting the site name that
 // happens server side in server/index.js
 // 1. An empty value is legitimate when the code is being invoked client side as
@@ -36,7 +37,9 @@ const __NEXTAUTH = {
   basePathServer: parseUrl(
     process.env.NEXTAUTH_URL_INTERNAL || process.env.NEXTAUTH_URL
   ).basePath,
+  domains: [],
   keepAlive: 0,
+  multiTenant,
   clientMaxAge: 0,
   // Properties starting with _ are used for tracking internal app state
   _clientLastSync: 0,
@@ -276,10 +279,14 @@ export function setOptions({
   basePath,
   clientMaxAge,
   keepAlive,
+  domains,
+  multiTenant,
 } = {}) {
   if (baseUrl) __NEXTAUTH.baseUrl = baseUrl
   if (basePath) __NEXTAUTH.basePath = basePath
   if (clientMaxAge) __NEXTAUTH.clientMaxAge = clientMaxAge
+  if (domains) __NEXTAUTH.domains = domains
+  if (multiTenant) __NEXTAUTH.domains = multiTenant
   if (keepAlive) {
     __NEXTAUTH.keepAlive = keepAlive
     if (typeof window === "undefined") return
@@ -316,7 +323,7 @@ export function Provider({ children, session, options }) {
  */
 async function _fetchData(path, { ctx, req = ctx?.req } = {}) {
   try {
-    const baseUrl = await _apiBaseUrl()
+    const baseUrl = await _apiBaseUrl(req)
     const options = req ? { headers: { cookie: req.headers.cookie } } : {}
     const res = await fetch(`${baseUrl}/${path}`, options)
     const data = await res.json()
@@ -328,15 +335,32 @@ async function _fetchData(path, { ctx, req = ctx?.req } = {}) {
   }
 }
 
-function _apiBaseUrl() {
+function _apiBaseUrl(req) {
   if (typeof window === "undefined") {
     // NEXTAUTH_URL should always be set explicitly to support server side calls - log warning if not set
-    if (!process.env.NEXTAUTH_URL) {
+    if (__NEXTAUTH.multiTenant && !process.env.NEXTAUTH_URL) {
       logger.warn("NEXTAUTH_URL", "NEXTAUTH_URL environment variable not set")
     }
 
     // Return absolute path when called server side
-    return `${__NEXTAUTH.baseUrlServer}${__NEXTAUTH.basePathServer}`
+    // return `${__NEXTAUTH.baseUrlServer}${__NEXTAUTH.basePathServer}`
+
+    if (req && __NEXTAUTH.multiTenant) {
+      let protocol = "http"
+      if (
+        (req.headers.referer &&
+          req.headers.referer.split("://")[0] === "https") ||
+        (req.headers["X-Forwarded-Proto"] &&
+          req.headers["X-Forwarded-Proto"] === "https")
+      ) {
+        protocol = "https"
+      }
+      return protocol + "://" + `${req.headers.host}${__NEXTAUTH.basePath}`
+    } else if (__NEXTAUTH.multiTenant) {
+      logger.warn("found an instance of multitenant without a req")
+    } else {
+      return `${__NEXTAUTH.baseUrl}${__NEXTAUTH.basePath}`
+    }
   }
   // Return relative path when called client side
   return __NEXTAUTH.basePath

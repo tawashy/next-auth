@@ -15,7 +15,7 @@
  * @return {Promise<boolean|never>}  Return `true` (or a modified JWT) to allow sign in
  *                                   Return `false` to deny access
  */
-export async function signIn () {
+export async function signIn() {
   return true
 }
 
@@ -28,7 +28,7 @@ export async function signIn () {
  * @param  {string} baseUrl  Default base URL of site (can be used as fallback)
  * @return {Promise<string>} URL the client will be redirect to
  */
-export async function redirect (url, baseUrl) {
+export async function redirect(url, baseUrl) {
   if (url.startsWith(baseUrl)) {
     return url
   }
@@ -43,7 +43,7 @@ export async function redirect (url, baseUrl) {
  * @param  {object} token    JSON Web Token (if enabled)
  * @return {Promise<object>} Session that will be returned to the client
  */
-export async function session (session) {
+export async function session(session, req) {
   return session
 }
 
@@ -59,6 +59,6 @@ export async function session (session) {
  * @param  {object} oAuthProfile  OAuth profile - only available on sign in
  * @return {Promise<object>}      JSON Web Token that will be saved
  */
-export async function jwt (token) {
+export async function jwt(token) {
   return token
 }
