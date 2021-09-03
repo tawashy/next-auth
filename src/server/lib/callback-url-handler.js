@@ -1,11 +1,11 @@
-import * as cookie from '../lib/cookie'
+import * as cookie from "../lib/cookie"
 
 /**
  * Get callback URL based on query param / cookie + validation,
  * and add it to `req.options.callbackUrl`.
  * @note: `req.options` must already be defined when called.
  */
-export default async function callbackUrlHandler (req, res) {
+export default async function callbackUrlHandler(req, res) {
   const { query } = req
   const { body } = req
   const { cookies, baseUrl, defaultCallbackUrl, callbacks } = req.options
@@ -25,8 +25,13 @@ export default async function callbackUrlHandler (req, res) {
   }
 
   // Save callback URL in a cookie so that can be used for subsequent requests in signin/signout/callback flow
-  if (callbackUrl && (callbackUrl !== callbackUrlCookieValue)) {
-    cookie.set(res, cookies.callbackUrl.name, callbackUrl, cookies.callbackUrl.options)
+  if (callbackUrl && callbackUrl !== callbackUrlCookieValue) {
+    cookie.set(
+      res,
+      cookies.callbackUrl.name,
+      callbackUrl,
+      cookies.callbackUrl.options
+    )
   }
 
   req.options.callbackUrl = callbackUrl

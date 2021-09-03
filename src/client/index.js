@@ -316,7 +316,7 @@ export function Provider({ children, session, options }) {
  */
 async function _fetchData(path, { ctx, req = ctx?.req } = {}) {
   try {
-    const baseUrl = await _apiBaseUrl(req)
+    const baseUrl = await _apiBaseUrl()
     const options = req ? { headers: { cookie: req.headers.cookie } } : {}
     const res = await fetch(`${baseUrl}/${path}`, options)
     const data = await res.json()
@@ -328,7 +328,7 @@ async function _fetchData(path, { ctx, req = ctx?.req } = {}) {
   }
 }
 
-function _apiBaseUrl(req) {
+function _apiBaseUrl() {
   if (typeof window === "undefined") {
     // NEXTAUTH_URL should always be set explicitly to support server side calls - log warning if not set
     if (!process.env.NEXTAUTH_URL) {
@@ -336,22 +336,7 @@ function _apiBaseUrl(req) {
     }
 
     // Return absolute path when called server side
-    // return `${__NEXTAUTH.baseUrlServer}${__NEXTAUTH.basePathServer}`
-    // TODO need to check for whitelisted domains in __NEXTAUTH.domains
-    if (req && __NEXTAUTH.multiTenant) {
-      let protocol = "http"
-      if (
-        (req.headers.referer &&
-          req.headers.referer.split("://")[0] === "https") ||
-        (req.headers["X-Forwarded-Proto"] &&
-          req.headers["X-Forwarded-Proto"] === "https")
-      ) {
-        protocol = "https"
-      }
-      return protocol + "://" + `${req.headers.host}${__NEXTAUTH.basePath}`
-    } else {
-      return `${__NEXTAUTH.baseUrl}${__NEXTAUTH.basePath}`
-    }
+    return `${__NEXTAUTH.baseUrlServer}${__NEXTAUTH.basePathServer}`
   }
   // Return relative path when called client side
   return __NEXTAUTH.basePath
