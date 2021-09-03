@@ -18,7 +18,6 @@ import {
 import _logger, { proxyLogger } from "../lib/logger"
 import parseUrl from "../lib/parse-url"
 
-const multiTenant = process.env.MULTI_TENANT === "true"
 // This behaviour mirrors the default behaviour for getting the site name that
 // happens server side in server/index.js
 // 1. An empty value is legitimate when the code is being invoked client side as
@@ -37,9 +36,7 @@ const __NEXTAUTH = {
   basePathServer: parseUrl(
     process.env.NEXTAUTH_URL_INTERNAL || process.env.NEXTAUTH_URL
   ).basePath,
-  domains: [],
   keepAlive: 0,
-  multiTenant,
   clientMaxAge: 0,
   // Properties starting with _ are used for tracking internal app state
   _clientLastSync: 0,
@@ -279,14 +276,10 @@ export function setOptions({
   basePath,
   clientMaxAge,
   keepAlive,
-  domains,
-  multiTenant,
 } = {}) {
   if (baseUrl) __NEXTAUTH.baseUrl = baseUrl
   if (basePath) __NEXTAUTH.basePath = basePath
   if (clientMaxAge) __NEXTAUTH.clientMaxAge = clientMaxAge
-  if (domains) __NEXTAUTH.domains = domains
-  if (multiTenant) __NEXTAUTH.domains = multiTenant
   if (keepAlive) {
     __NEXTAUTH.keepAlive = keepAlive
     if (typeof window === "undefined") return
@@ -338,13 +331,13 @@ async function _fetchData(path, { ctx, req = ctx?.req } = {}) {
 function _apiBaseUrl(req) {
   if (typeof window === "undefined") {
     // NEXTAUTH_URL should always be set explicitly to support server side calls - log warning if not set
-    if (__NEXTAUTH.multiTenant && !process.env.NEXTAUTH_URL) {
+    if (!process.env.NEXTAUTH_URL) {
       logger.warn("NEXTAUTH_URL", "NEXTAUTH_URL environment variable not set")
     }
 
     // Return absolute path when called server side
     // return `${__NEXTAUTH.baseUrlServer}${__NEXTAUTH.basePathServer}`
-
+    // TODO need to check for whitelisted domains in __NEXTAUTH.domains
     if (req && __NEXTAUTH.multiTenant) {
       let protocol = "http"
       if (
@@ -356,8 +349,6 @@ function _apiBaseUrl(req) {
         protocol = "https"
       }
       return protocol + "://" + `${req.headers.host}${__NEXTAUTH.basePath}`
-    } else if (__NEXTAUTH.multiTenant) {
-      logger.warn("found an instance of multitenant without a req")
     } else {
       return `${__NEXTAUTH.baseUrl}${__NEXTAUTH.basePath}`
     }

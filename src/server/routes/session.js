@@ -46,8 +46,7 @@ export default async function session(req, res) {
       const jwtPayload = await callbacks.jwt(decodedJwt)
       const sessionPayload = await callbacks.session(
         defaultSessionPayload,
-        jwtPayload,
-        req
+        jwtPayload
       )
 
       // Return session payload as response
@@ -102,8 +101,7 @@ export default async function session(req, res) {
         // Pass Session through to the session callback
         const sessionPayload = await callbacks.session(
           defaultSessionPayload,
-          user,
-          req
+          user
         )
 
         // Return session payload as response
