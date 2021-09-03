@@ -1,6 +1,6 @@
 {
   "name": "@tawashy/na-multi-tenant",
-  "version": "0.0.0-semantically-released",
+  "version": "0.0.0",
   "description": "Authentication for Next.js",
   "homepage": "https://next-auth.js.org",
   "repository": {
