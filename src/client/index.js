@@ -216,7 +216,7 @@ export async function signIn(provider, options = {}, authorizationParams = {}) {
   const data = await res.json()
 
   if (redirect || !isSupportingReturn) {
-    const url = data.url ?? callbackUrl
+    const url = callbackUrl
     window.location.replace(url)
     // If url contains a hash, the browser does not reload the page. We reload manually
     if (url.includes("#")) window.location.reload()
